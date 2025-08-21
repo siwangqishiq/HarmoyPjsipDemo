@@ -16,8 +16,7 @@ include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include)
 
 add_library(entry SHARED
-               napi_init.cpp
-               log.cpp)
+               napi_init.cpp)
 
 target_link_libraries(entry PUBLIC ${hilog-lib} libace_napi.z.so)
 
@@ -30,8 +29,8 @@ target_compile_definitions(entry PUBLIC -DPJ_AUTOCONF=1  -DPJ_IS_BIG_ENDIAN=0 -D
 # 将三方库加入工程中
 target_link_directories(entry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/lib ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/opus/${OHOS_ARCH}/lib)
 if(${OHOS_ARCH} STREQUAL "arm64-v8a")
-  message("arm64-v8a Architecture")
-  target_link_libraries(entry PUBLIC
+    message("arm64-v8a Architecture")
+    target_link_libraries(entry PUBLIC
         pjsua2-aarch64-unknown-linux-gnu
         pjsua-aarch64-unknown-linux-gnu
         pjsip-ua-aarch64-unknown-linux-gnu
@@ -53,7 +52,7 @@ if(${OHOS_ARCH} STREQUAL "arm64-v8a")
         g7221codec-aarch64-unknown-linux-gnu
         yuv-aarch64-unknown-linux-gnu  opus)
 elseif(${OHOS_ARCH} STREQUAL "armeabi-v7a")
-  target_link_libraries(entry PUBLIC
+    target_link_libraries(entry PUBLIC
         pjsua2-arm-unknown-linux-gnu
         pjsua-arm-unknown-linux-gnu
         pjsip-ua-arm-unknown-linux-gnu
@@ -74,6 +73,29 @@ elseif(${OHOS_ARCH} STREQUAL "armeabi-v7a")
         ilbccodec-arm-unknown-linux-gnu
         g7221codec-arm-unknown-linux-gnu
         yuv-arm-unknown-linux-gnu  opus)
+elseif(${OHOS_ARCH} STREQUAL "x86_64")
+    message("x86_64 Architecture")
+    target_link_libraries(entry PUBLIC
+            pjsua2-x86_64-pc-linux-gnu
+            pjsua-x86_64-pc-linux-gnu
+            pjsip-ua-x86_64-pc-linux-gnu
+            pjsip-simple-x86_64-pc-linux-gnu
+            pjsip-x86_64-pc-linux-gnu
+            pjmedia-codec-x86_64-pc-linux-gnu
+            pjmedia-x86_64-pc-linux-gnu
+            pjmedia-videodev-x86_64-pc-linux-gnu
+            pjmedia-audiodev-x86_64-pc-linux-gnu
+            pjmedia-x86_64-pc-linux-gnu
+            pjnath-x86_64-pc-linux-gnu
+            pjlib-util-x86_64-pc-linux-gnu
+            pj-x86_64-pc-linux-gnu
+            srtp-x86_64-pc-linux-gnu
+            resample-x86_64-pc-linux-gnu
+            gsmcodec-x86_64-pc-linux-gnu
+            speex-x86_64-pc-linux-gnu
+            ilbccodec-x86_64-pc-linux-gnu
+            g7221codec-x86_64-pc-linux-gnu
+            yuv-x86_64-pc-linux-gnu  opus)
 else()
   message("not support Architecture")
 endif()

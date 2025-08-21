@@ -1,0 +1,57 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\panyi\\.ohos\\config\\default_HarmoyPjsipDem_lwvRjDCsyB0u2fs3pEfhHni70vtqoqmHEdedKcAeIfk=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B7085CE78B5BFBDEF35933D67CEEBEEBBAC0E07C88DDD5263FF912923521B8B5F9268588A2E8030",
+          "profile": "C:\\Users\\panyi\\.ohos\\config\\default_HarmoyPjsipDem_lwvRjDCsyB0u2fs3pEfhHni70vtqoqmHEdedKcAeIfk=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\panyi\\.ohos\\config\\default_HarmoyPjsipDem_lwvRjDCsyB0u2fs3pEfhHni70vtqoqmHEdedKcAeIfk=.p12",
+          "storePassword": "0000001B8E9816DC258CDC3872A224C58D3D53C1253E203FA93A0347747160C1720B41BC6E891CC0BC3F7E"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "5.0.5(17)",
+        "compatibleSdkVersion": "5.0.5(17)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "nativeCompiler": "BiSheng",
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

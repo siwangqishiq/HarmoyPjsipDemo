@@ -1,0 +1,16 @@
+# Opus codec reference implementation pkg-config file
+
+prefix=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a
+exec_prefix=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a
+libdir=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a/lib
+includedir=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a/include
+
+Name: Opus
+Description: Opus IETF audio codec ( build)
+URL: https://opus-codec.org/
+Version: 1.4
+Requires:
+Conflicts:
+Libs: -L/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a/lib -lopus
+Libs.private: -lm
+Cflags: -I/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/opus/arm64-v8a/include/opus

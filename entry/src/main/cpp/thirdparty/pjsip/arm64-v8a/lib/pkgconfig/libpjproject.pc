@@ -1,0 +1,14 @@
+# Package Information for pkg-config
+
+prefix=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/pjsip/arm64-v8a
+exec_prefix=${prefix}
+libdir=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/pjsip/arm64-v8a/lib
+includedir=/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/pjsip/arm64-v8a/include
+
+Name: libpjproject
+Description: Multimedia communication library
+URL: http://www.pjsip.org
+Version: 2.13.1
+Libs: -L/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/pjsip/arm64-v8a/lib -lpjsua2-aarch64-unknown-linux-gnu -lstdc++ -lpjsua-aarch64-unknown-linux-gnu -lpjsip-ua-aarch64-unknown-linux-gnu -lpjsip-simple-aarch64-unknown-linux-gnu -lpjsip-aarch64-unknown-linux-gnu -lpjmedia-codec-aarch64-unknown-linux-gnu -lpjmedia-aarch64-unknown-linux-gnu -lpjmedia-videodev-aarch64-unknown-linux-gnu -lpjmedia-audiodev-aarch64-unknown-linux-gnu -lpjmedia-aarch64-unknown-linux-gnu -lpjnath-aarch64-unknown-linux-gnu -lpjlib-util-aarch64-unknown-linux-gnu -lpj-aarch64-unknown-linux-gnu
+Libs.private: -lsrtp-aarch64-unknown-linux-gnu -lresample-aarch64-unknown-linux-gnu -lgsmcodec-aarch64-unknown-linux-gnu -lspeex-aarch64-unknown-linux-gnu -lilbccodec-aarch64-unknown-linux-gnu -lg7221codec-aarch64-unknown-linux-gnu -lyuv-aarch64-unknown-linux-gnu  -lopus -lm -lrt -lpthread 
+Cflags: -I/mnt/e/harm_lib/tpc_c_cplusplus/lycium/usr/pjsip/arm64-v8a/include -DPJ_AUTOCONF=1  -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1

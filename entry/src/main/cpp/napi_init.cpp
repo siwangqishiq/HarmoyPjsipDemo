@@ -55,16 +55,56 @@ static napi_value NAPI_Global_getPjsipVersionStr(napi_env env, napi_callback_inf
     
     napi_value result;
     napi_create_string_utf8(env, pjVersion.c_str(), pjVersion.length(), &result);
+    
     return result;
 }
 
+static napi_value NAPI_Global_registerCallback(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    napi_value argv = nullptr;    
+    napi_create_int32(env, 2, &argv );
+
+    // 调用传入的callback，并将其结果返回
+    napi_value result = nullptr;
+    napi_call_function(env, nullptr, args[0], 1, &argv, &result);
+    return result;
+}
+
+static napi_value NAPI_Global_registerCallback2(napi_env env, napi_callback_info info) {
+    size_t argc = 2;
+    napi_value args[2] = {nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    int32_t inputCounter = 0;
+    napi_get_value_int32(env, args[0], &inputCounter);
+    
+    NLOGI("inputCounter = %{public}i", inputCounter);
+    if(inputCounter == 0){
+        inputCounter = 1;
+    }else{
+        inputCounter= inputCounter << 1;
+    }
+    NLOGI("outputCounter = %{public}i", inputCounter);
+    napi_value outputCounter;
+    napi_create_int32(env, inputCounter, &outputCounter);
+    
+    napi_value result = nullptr;
+    napi_call_function(env, nullptr, args[1], 1, &outputCounter, &result);
+    return result;
+}
 
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
         {"add", nullptr, Add, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"getNativeString", nullptr, NAPI_Global_getNativeString, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"getPjsipVersionStr", nullptr, NAPI_Global_getPjsipVersionStr, nullptr, nullptr, nullptr, napi_default, nullptr }
+        {"getPjsipVersionStr", nullptr, NAPI_Global_getPjsipVersionStr, nullptr, nullptr, nullptr, napi_default,
+         nullptr},
+        {"registerCallback", nullptr, NAPI_Global_registerCallback, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"registerCallback2", nullptr, NAPI_Global_registerCallback2, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

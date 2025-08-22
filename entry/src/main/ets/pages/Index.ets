@@ -1,5 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import NativeBridge from 'libentry.so';
+import NativeBridge from 'libyxpjsip.so';
 
 const DOMAIN = 0x0000;
 
@@ -34,7 +34,7 @@ struct Index {
           })
 
         Text(this.codecs)
-          .fontSize(30)
+          .fontSize(10)
 
         Button(this.counter.toString())
           .type(ButtonType.Circle)

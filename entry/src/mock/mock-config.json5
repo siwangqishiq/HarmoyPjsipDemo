@@ -1,5 +1,5 @@
 {
-  "libentry.so": {
+  "libyxpjsip.so": {
     "source": "src/mock/Libentry.mock.ets"
   }
 }

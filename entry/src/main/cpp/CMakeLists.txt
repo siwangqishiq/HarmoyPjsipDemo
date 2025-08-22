@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.5.0)
 project(HarmoyPjsipDem)
 
 set(NATIVERENDER_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(lib_name "yxpjsip")
+
 
 if(DEFINED PACKAGE_FIND_FILE)
     include(${PACKAGE_FIND_FILE})
@@ -15,22 +17,22 @@ find_library(hilog-lib libhilog_ndk.z.so)
 include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include)
 
-add_library(entry SHARED
+add_library(${lib_name} SHARED
                napi_init.cpp)
 
-target_link_libraries(entry PUBLIC ${hilog-lib} libace_napi.z.so)
+target_link_libraries(${lib_name} PUBLIC ${hilog-lib} libace_napi.z.so)
 
 # 将三方库的头文件加入工程中
-target_include_directories(entry PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/include/)
+target_include_directories(${lib_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/include/)
 
 # 设置对应的配置项
-target_compile_definitions(entry PUBLIC -DPJ_AUTOCONF=1  -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1)
+target_compile_definitions(${lib_name} PUBLIC -DPJ_AUTOCONF=1  -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1)
 
 # 将三方库加入工程中
-target_link_directories(entry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/lib ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/opus/${OHOS_ARCH}/lib)
+target_link_directories(${lib_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/lib ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/opus/${OHOS_ARCH}/lib)
 if(${OHOS_ARCH} STREQUAL "arm64-v8a")
     message("arm64-v8a Architecture")
-    target_link_libraries(entry PUBLIC
+    target_link_libraries(${lib_name} PUBLIC
         pjsua2-aarch64-unknown-linux-gnu
         pjsua-aarch64-unknown-linux-gnu
         pjsip-ua-aarch64-unknown-linux-gnu
@@ -52,7 +54,7 @@ if(${OHOS_ARCH} STREQUAL "arm64-v8a")
         g7221codec-aarch64-unknown-linux-gnu
         yuv-aarch64-unknown-linux-gnu  opus)
 elseif(${OHOS_ARCH} STREQUAL "armeabi-v7a")
-    target_link_libraries(entry PUBLIC
+    target_link_libraries(${lib_name} PUBLIC
         pjsua2-arm-unknown-linux-gnu
         pjsua-arm-unknown-linux-gnu
         pjsip-ua-arm-unknown-linux-gnu
@@ -75,7 +77,7 @@ elseif(${OHOS_ARCH} STREQUAL "armeabi-v7a")
         yuv-arm-unknown-linux-gnu  opus)
 elseif(${OHOS_ARCH} STREQUAL "x86_64")
     message("x86_64 Architecture")
-    target_link_libraries(entry PUBLIC
+    target_link_libraries(${lib_name} PUBLIC
             pjsua2-x86_64-pc-linux-gnu
             pjsua-x86_64-pc-linux-gnu
             pjsip-ua-x86_64-pc-linux-gnu

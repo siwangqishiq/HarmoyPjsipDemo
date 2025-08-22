@@ -16,7 +16,7 @@ struct Index {
   aboutToAppear(): void {
     this.nativeStr = NativeBridge.getNativeString()
     this.pjsipVersion = NativeBridge.getPjsipVersionStr()
-    this.codecs = this.findCodecTypes()
+    this.codecs = NativeBridge.findCodecFormats()
   }
 
   build() {
@@ -59,11 +59,6 @@ struct Index {
     })
   }
 
-  findCodecTypes():string{
-    return NativeBridge.findCodecFormats()
-  }
-
   sipLogin():void{
-
   }
 }

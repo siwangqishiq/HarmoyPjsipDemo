@@ -14,7 +14,7 @@
     },
     {
       "name": "permission_micro_phone",
-      "value": "label"
+      "value": "sip通话需要录音权限"
     }
   ]
 }

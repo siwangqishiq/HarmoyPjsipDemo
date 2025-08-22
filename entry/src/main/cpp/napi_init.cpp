@@ -6,6 +6,9 @@ extern "C" {
 #include "pjlib.h"
 }
 #include "log.h"
+#include "sip_app.h"
+
+SipApp *sipApp = nullptr;
 
 static napi_value Add(napi_env env, napi_callback_info info)
 {
@@ -45,14 +48,7 @@ static napi_value NAPI_Global_getNativeString(napi_env env, napi_callback_info i
 }
 
 static napi_value NAPI_Global_getPjsipVersionStr(napi_env env, napi_callback_info info) {
-    pj::Endpoint ep;
-    ep.libCreate();
-    
-    pj::EpConfig ep_cfg;
-    ep.libInit(ep_cfg);
     std::string pjVersion = pj_get_version();
-    ep.libDestroy();
-    
     napi_value result;
     napi_create_string_utf8(env, pjVersion.c_str(), pjVersion.length(), &result);
     
@@ -97,25 +93,45 @@ static napi_value NAPI_Global_registerCallback2(napi_env env, napi_callback_info
 }
 
 static napi_value NAPI_Global_findCodecFormats(napi_env env, napi_callback_info info) {
-    pj::Endpoint ep;
-    ep.libCreate();
+    napi_value ret = nullptr;
+
+    if(sipApp == nullptr){
+        return ret;
+    }
+
+    sipApp->getEndpoint()->audDevManager().setNullDev();
     
-    pj::EpConfig ep_cfg;
-    ep.libInit(ep_cfg);
-    
-    ep.audDevManager().setNullDev();
-    
-    pj::CodecInfoVector2 codecs = ep.codecEnum2();
+    pj::CodecInfoVector2 codecs = sipApp->getEndpoint()->codecEnum2();
     std::string result = "";
     for(auto &codec : codecs){
         NLOGI("codec: %{public}s",codec.codecId.c_str());
         result += codec.codecId;
         result += "\n";
     }//end for each
-    ep.libDestroy();
+    
+   
+    napi_create_string_utf8(env, result.c_str(), result.length(), &ret);
+    return ret;
+}
+
+static napi_value NAPI_Global_SipAppStart(napi_env env, napi_callback_info info) {
+    if(sipApp != nullptr){
+        delete sipApp;
+        sipApp = nullptr;
+    }
+    sipApp = new SipApp();
     
     napi_value ret = nullptr;
-    napi_create_string_utf8(env, result.c_str(), result.length(), &ret);
+    return ret;
+}
+
+static napi_value NAPI_Global_SipAppEnd(napi_env env, napi_callback_info info) {
+    if(sipApp != nullptr){
+        delete sipApp;
+        sipApp = nullptr;
+    }
+    
+    napi_value ret = nullptr;
     return ret;
 }
 
@@ -128,7 +144,9 @@ static napi_value Init(napi_env env, napi_value exports) {
          nullptr},
         {"registerCallback", nullptr, NAPI_Global_registerCallback, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"registerCallback2", nullptr, NAPI_Global_registerCallback2, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"findCodecFormats", nullptr, NAPI_Global_findCodecFormats, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"findCodecFormats", nullptr, NAPI_Global_findCodecFormats, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SipAppStart", nullptr, NAPI_Global_SipAppStart, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SipAppEnd", nullptr, NAPI_Global_SipAppEnd, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
@@ -140,7 +158,7 @@ static napi_module demoModule = {
     .nm_flags = 0,
     .nm_filename = nullptr,
     .nm_register_func = Init,
-    .nm_modname = "entry",
+    .nm_modname = "yxpjsip",
     .nm_priv = ((void*)0),
     .reserved = { 0 },
 };
@@ -148,4 +166,5 @@ static napi_module demoModule = {
 extern "C" __attribute__((constructor)) void RegisterEntryModule(void)
 {
     napi_module_register(&demoModule);
+    sipApp = nullptr;
 }

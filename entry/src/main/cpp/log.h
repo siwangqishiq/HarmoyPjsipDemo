@@ -9,7 +9,7 @@
 
 #include <hilog/log.h>
 
-#define LOG_TAG "native"
+#define LOG_TAG "native_log"
 
 #define NLOGI(fmt, ...) OH_LOG_Print(LOG_APP, LOG_INFO,  LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
 #define NLOGE(fmt, ...) OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)

@@ -9,3 +9,7 @@ export const findCodecFormats:()=>string;
 export const registerCallback:(cb:()=>void) => void;
 
 export const registerCallback2:(value:number, cb:(counter:number)=>void) => void;
+
+export const SipAppStart:()=>void;
+
+export const SipAppEnd:()=>void

@@ -18,7 +18,8 @@ include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include)
 
 add_library(${lib_name} SHARED
-               napi_init.cpp)
+               napi_init.cpp
+               sip_app.cpp)
 
 target_link_libraries(${lib_name} PUBLIC ${hilog-lib} libace_napi.z.so)
 

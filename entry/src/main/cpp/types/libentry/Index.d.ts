@@ -4,6 +4,8 @@ export const getNativeString:() => string;
 
 export const getPjsipVersionStr:() => string;
 
+export const findCodecFormats:()=>string;
+
 export const registerCallback:(cb:()=>void) => void;
 
 export const registerCallback2:(value:number, cb:(counter:number)=>void) => void;

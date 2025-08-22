@@ -96,6 +96,29 @@ static napi_value NAPI_Global_registerCallback2(napi_env env, napi_callback_info
     return result;
 }
 
+static napi_value NAPI_Global_findCodecFormats(napi_env env, napi_callback_info info) {
+    pj::Endpoint ep;
+    ep.libCreate();
+    
+    pj::EpConfig ep_cfg;
+    ep.libInit(ep_cfg);
+    
+    ep.audDevManager().setNullDev();
+    
+    pj::CodecInfoVector2 codecs = ep.codecEnum2();
+    std::string result = "";
+    for(auto &codec : codecs){
+        NLOGI("codec: %{public}s",codec.codecId.c_str());
+        result += codec.codecId;
+        result += "\n";
+    }//end for each
+    ep.libDestroy();
+    
+    napi_value ret = nullptr;
+    napi_create_string_utf8(env, result.c_str(), result.length(), &ret);
+    return ret;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -104,7 +127,8 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"getPjsipVersionStr", nullptr, NAPI_Global_getPjsipVersionStr, nullptr, nullptr, nullptr, napi_default,
          nullptr},
         {"registerCallback", nullptr, NAPI_Global_registerCallback, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"registerCallback2", nullptr, NAPI_Global_registerCallback2, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"registerCallback2", nullptr, NAPI_Global_registerCallback2, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"findCodecFormats", nullptr, NAPI_Global_findCodecFormats, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

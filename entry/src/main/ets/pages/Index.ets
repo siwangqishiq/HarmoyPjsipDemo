@@ -11,10 +11,12 @@ struct Index {
   @State pjsipVersion : string = "unknow";
 
   @State counter : number = 0;
+  @State codecs : string = "";
 
   aboutToAppear(): void {
     this.nativeStr = NativeBridge.getNativeString()
     this.pjsipVersion = NativeBridge.getPjsipVersionStr()
+    this.codecs = this.findCodecTypes()
   }
 
   build() {
@@ -30,6 +32,9 @@ struct Index {
           .onClick(() => {
             this.message = NativeBridge.getNativeString()
           })
+
+        Text(this.codecs)
+          .fontSize(30)
 
         Button(this.counter.toString())
           .type(ButtonType.Circle)
@@ -52,6 +57,10 @@ struct Index {
     NativeBridge.registerCallback2( this.counter, (v:number)=>{
       this.counter = v
     })
+  }
+
+  findCodecTypes():string{
+    return NativeBridge.findCodecFormats()
   }
 
   sipLogin():void{

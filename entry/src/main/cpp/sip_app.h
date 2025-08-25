@@ -13,6 +13,7 @@
 #include <string>
 #include "pjsua2.hpp"
 #include <memory>
+#include <thread>
 
 const std::string SIP_PROTOCOL = "sip:";
 const std::string SIP_SERVER = "192.168.102.72:5060";

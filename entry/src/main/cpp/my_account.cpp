@@ -7,6 +7,7 @@
 #include "my_account.h"
 #include "log.h"
 #include "sip_app.h"
+#include <thread>
 
 MyAccount::MyAccount(){
     NLOGI("MyAccount construct");
@@ -39,6 +40,7 @@ void MyAccount::create(std::string account, std::string password){
 void MyAccount::onRegState(pj::OnRegStateParam &prm) {
     NLOGI("MyAccount on reg state changed code = %{public}d" , prm.code);
     NLOGI("MyAccount on reg state changed reason = %{public}s" , prm.reason.c_str());
+    NLOGI("MyAccount onRegState thread id : %{public}d", std::this_thread::get_id());
 }
     
 void MyAccount::onIncomingCall(pj::OnIncomingCallParam &iprm){

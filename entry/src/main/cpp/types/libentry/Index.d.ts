@@ -15,3 +15,9 @@ export const SipAppStart:()=>void;
 export const SipAppEnd:()=>void;
 
 export const SipLogin:(account:string,password:string)=>void;
+
+export const RegisterSipObserver:(observer:object)=>void;
+
+export const UnregisterSipObserver:(observer:object)=>void;
+
+

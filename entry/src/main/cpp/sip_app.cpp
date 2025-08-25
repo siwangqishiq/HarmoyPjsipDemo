@@ -46,5 +46,7 @@ void SipApp::sipLogin(std::string account, std::string password){
     
     account_ = std::make_shared<MyAccount>();
     account_->create(account, password);
+    
+    NLOGI("sipLogin thread id : %{public}d", std::this_thread::get_id());
 }
 

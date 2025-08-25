@@ -159,6 +159,31 @@ static napi_value NAPI_Global_SipLogin(napi_env env, napi_callback_info info) {
     return ret;
 }
 
+static napi_value NAPI_Global_RegisterSipObserver(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    napi_ref observerRef;
+    napi_create_reference(env, args[0], 1, &observerRef);
+    
+    napi_value onDisconnectFunc;
+    napi_get_named_property(env, args[0], "onDisconnect", &onDisconnectFunc);
+    
+    NLOGI("call disconnect thread id : %{public}d", std::this_thread::get_id());
+    napi_value callIdValue;
+    napi_create_int32(env, 123, &callIdValue);
+    napi_call_function(env, args[0], onDisconnectFunc, 1, &callIdValue, nullptr);
+    napi_value ret = nullptr;
+    return ret;
+}
+
+static napi_value NAPI_Global_UnregisterSipObserver(napi_env env, napi_callback_info info) {
+    
+    napi_value ret = nullptr;
+    return ret;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -170,8 +195,11 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"registerCallback2", nullptr, NAPI_Global_registerCallback2, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"findCodecFormats", nullptr, NAPI_Global_findCodecFormats, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SipAppStart", nullptr, NAPI_Global_SipAppStart, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"SipAppEnd", nullptr, NAPI_Global_SipAppEnd, nullptr, nullptr, nullptr, napi_default, nullptr },
-{ "SipLogin", nullptr, NAPI_Global_SipLogin, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"SipAppEnd", nullptr, NAPI_Global_SipAppEnd, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SipLogin", nullptr, NAPI_Global_SipLogin, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"RegisterSipObserver", nullptr, NAPI_Global_RegisterSipObserver, nullptr, nullptr, nullptr, napi_default,
+         nullptr},
+        {"UnregisterSipObserver", nullptr, NAPI_Global_UnregisterSipObserver, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

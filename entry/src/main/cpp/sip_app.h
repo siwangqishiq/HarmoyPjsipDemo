@@ -5,6 +5,7 @@
 // please 
 
 #pragma once
+#include "my_account.h"
 #ifndef HARMOYPJSIPDEMO_SIP_APP_H
 #define HARMOYPJSIPDEMO_SIP_APP_H
 
@@ -13,12 +14,16 @@
 #include "pjsua2.hpp"
 #include <memory>
 
+const std::string SIP_PROTOCOL = "sip:";
+const std::string SIP_SERVER = "192.168.102.72:5060";
 
 class SipApp {
 public:
     static const std::string TAG;
     
     SipApp();
+    
+    void sipLogin(std::string account, std::string password);
     
     virtual ~SipApp();
     
@@ -27,6 +32,7 @@ public:
     }
 private:
     std::unique_ptr<pj::Endpoint> endpoint_;
+    std::shared_ptr<MyAccount> account_ = nullptr;
 };
 
 #endif //HARMOYPJSIPDEMO_SIP_APP_H

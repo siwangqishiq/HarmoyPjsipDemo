@@ -6,6 +6,7 @@
 
 #include "sip_app.h"
 #include "log.h"
+#include "my_account.h"
 
 const std::string SipApp::TAG = "sip_app";
 
@@ -18,7 +19,7 @@ SipApp::SipApp(){
         pj::EpConfig config;
         config.logConfig.level = 5;
         config.uaConfig.maxCalls = 4;
-        config.uaConfig.userAgent = "panyi_pjsip_ua";
+        config.uaConfig.userAgent = "panyi_ua";
         
         endpoint_->libInit(config);
         NLOGI("SipApp endpoint lib init");
@@ -38,5 +39,12 @@ SipApp::SipApp(){
 SipApp::~SipApp(){
     endpoint_->libDestroy();
     NLOGI("SipApp disposed");
+}
+
+void SipApp::sipLogin(std::string account, std::string password){
+    NLOGI("SipApp sipLogin");
+    
+    account_ = std::make_shared<MyAccount>();
+    account_->create(account, password);
 }
 

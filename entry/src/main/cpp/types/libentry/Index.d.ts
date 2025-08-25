@@ -12,4 +12,6 @@ export const registerCallback2:(value:number, cb:(counter:number)=>void) => void
 
 export const SipAppStart:()=>void;
 
-export const SipAppEnd:()=>void
+export const SipAppEnd:()=>void;
+
+export const SipLogin:(account:string,password:string)=>void;

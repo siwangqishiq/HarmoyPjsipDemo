@@ -135,6 +135,30 @@ static napi_value NAPI_Global_SipAppEnd(napi_env env, napi_callback_info info) {
     return ret;
 }
 
+static napi_value NAPI_Global_SipLogin(napi_env env, napi_callback_info info) {
+    size_t argc = 2;
+    napi_value args[2] = {nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    char buf[1024];
+    size_t size = 0;
+    
+    napi_get_value_string_utf8(env, args[0], buf, 1024, &size);
+    std::string inputAccount(buf,buf + size);
+    
+    napi_get_value_string_utf8(env, args[1], buf, 1024 , &size);
+    std::string inputPassword(buf,buf + size);
+    
+    NLOGI("input account: %{public}s  pwd:%{public}s", inputAccount.c_str(), inputPassword.c_str());
+    
+    if(sipApp != nullptr){
+        sipApp->sipLogin(inputAccount, inputPassword);
+    }
+    
+    napi_value ret = nullptr;
+    return ret;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -147,6 +171,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"findCodecFormats", nullptr, NAPI_Global_findCodecFormats, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SipAppStart", nullptr, NAPI_Global_SipAppStart, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SipAppEnd", nullptr, NAPI_Global_SipAppEnd, nullptr, nullptr, nullptr, napi_default, nullptr },
+{ "SipLogin", nullptr, NAPI_Global_SipLogin, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

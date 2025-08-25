@@ -6,12 +6,15 @@ const DOMAIN = 0x0000;
 @Entry
 @Component
 struct Index {
-  @State message: string = 'Hello World';
-  @State nativeStr: string = "";
-  @State pjsipVersion : string = "unknow";
+  @State message: string = 'Hello World'
+  @State nativeStr: string = ""
+  @State pjsipVersion : string = "unknow"
 
-  @State counter : number = 0;
-  @State codecs : string = "";
+  @State counter : number = 0
+  @State codecs : string = ""
+
+  inputAccount:string = ""
+  inputPassword:string = ""
 
   aboutToAppear(): void {
     this.nativeStr = NativeBridge.getNativeString()
@@ -26,21 +29,43 @@ struct Index {
           .fontSize($r('app.float.page_text_font_size'))
           .fontWeight(FontWeight.Bold)
 
-        Text(this.message)
-          .fontSize($r('app.float.page_text_font_size'))
-          .fontWeight(FontWeight.Bold)
-          .onClick(() => {
-            this.message = NativeBridge.getNativeString()
+        // Text(this.message)
+        //   .fontSize($r('app.float.page_text_font_size'))
+        //   .fontWeight(FontWeight.Bold)
+        //   .onClick(() => {
+        //     this.message = NativeBridge.getNativeString()
+        //   })
+
+        // Text(this.codecs)
+        //   .fontSize(10)
+        //
+        // Button(this.counter.toString())
+        //   .type(ButtonType.Circle)
+        //   .width(100)
+        //   .onClick(()=>{
+        //     this.testButtonClick()
+        //   })
+
+        TextInput({
+          placeholder:"Sip账号",
+        }).fontSize(20)
+          .margin({top:8})
+          .onChange((v)=>{
+            this.inputAccount = v
           })
 
-        Text(this.codecs)
-          .fontSize(10)
+        TextInput({
+          placeholder:"Sip密码",
+        }).fontSize(20)
+          .margin({top:8})
+          .onChange((v)=>{
+            this.inputPassword = v
+          })
 
-        Button(this.counter.toString())
-          .type(ButtonType.Circle)
-          .width(100)
+        Button("Sip登录")
+          .margin({top:8})
           .onClick(()=>{
-            this.testButtonClick()
+            NativeBridge.SipLogin(this.inputAccount, this.inputPassword)
           })
 
         // Button("Sip登录")

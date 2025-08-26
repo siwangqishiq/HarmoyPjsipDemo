@@ -1,12 +1,13 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import NativeBridge from 'libyxpjsip.so';
+import { CallPageParams } from './CallPage';
 import { SipObserver } from './SipObserver';
-
-const DOMAIN = 0x0000;
 
 @Entry
 @Component
 struct Index {
+  pathStack:NavPathStack = new NavPathStack()
+
   @State message: string = 'Hello World'
   @State nativeStr: string = ""
   @State pjsipVersion : string = "unknow"
@@ -37,82 +38,86 @@ struct Index {
     this.pjsipVersion = NativeBridge.getPjsipVersionStr()
     this.codecs = NativeBridge.findCodecFormats()
 
-    this.registerObserver(this.observer)
+    NativeBridge.RegisterSipObserver(this.observer)
   }
 
   aboutToDisappear(): void {
-    this.unRegisterObserver(this.observer)
-  }
-
-  registerObserver(observer:SipObserver):void {
-
-  }
-
-  unRegisterObserver(observer:SipObserver):void{
-
+    NativeBridge.UnregisterSipObserver(this.observer)
   }
 
   build() {
-    Row() {
-      Column() {
-        Text("TestFunc").fontSize(30)
-          .onClick((v)=>{
-            NativeBridge.RegisterSipObserver(this.observer)
-          })
+    Navigation(this.pathStack){
+      Row() {
+        Column() {
+          Text("TestFunc").fontSize(30)
+            .onClick((v)=>{
+              NativeBridge.RegisterSipObserver(this.observer)
+            })
 
-        Text("PjsipVersion:" + this.pjsipVersion)
-          .fontSize($r('app.float.page_text_font_size'))
-          .fontWeight(FontWeight.Bold)
+          Text("PjsipVersion:" + this.pjsipVersion)
+            .fontSize($r('app.float.page_text_font_size'))
+            .fontWeight(FontWeight.Bold)
 
-        // Text(this.message)
-        //   .fontSize($r('app.float.page_text_font_size'))
-        //   .fontWeight(FontWeight.Bold)
-        //   .onClick(() => {
-        //     this.message = NativeBridge.getNativeString()
-        //   })
+          // Text(this.message)
+          //   .fontSize($r('app.float.page_text_font_size'))
+          //   .fontWeight(FontWeight.Bold)
+          //   .onClick(() => {
+          //     this.message = NativeBridge.getNativeString()
+          //   })
 
-        // Text(this.codecs)
-        //   .fontSize(10)
-        //
-        // Button(this.counter.toString())
-        //   .type(ButtonType.Circle)
-        //   .width(100)
-        //   .onClick(()=>{
-        //     this.testButtonClick()
-        //   })
+          // Text(this.codecs)
+          //   .fontSize(10)
+          //
+          // Button(this.counter.toString())
+          //   .type(ButtonType.Circle)
+          //   .width(100)
+          //   .onClick(()=>{
+          //     this.testButtonClick()
+          //   })
 
-        TextInput({
-          placeholder:"Sip账号",
-          text:this.inputAccount
-        }).fontSize(20)
-          .margin({top:8})
-          .onChange((v)=>{
-            this.inputAccount = v
-          })
+          TextInput({
+            placeholder:"Sip账号",
+            text:this.inputAccount
+          }).fontSize(20)
+            .margin({top:8})
+            .onChange((v)=>{
+              this.inputAccount = v
+            })
 
-        TextInput({
-          placeholder:"Sip密码",
-          text:this.inputPassword
-        }).fontSize(20)
-          .margin({top:8})
-          .onChange((v)=>{
-            this.inputPassword = v
-          })
+          TextInput({
+            placeholder:"Sip密码",
+            text:this.inputPassword
+          }).fontSize(20)
+            .margin({top:8})
+            .onChange((v)=>{
+              this.inputPassword = v
+            })
 
-        Button("Sip登录")
-          .margin({top:8})
-          .onClick(()=>{
-            NativeBridge.SipLogin(this.inputAccount, this.inputPassword)
-          })
+          Button("Sip登录")
+            .margin({top:8})
+            .onClick(()=>{
+              NativeBridge.SipLogin(this.inputAccount, this.inputPassword)
+            })
 
-        // Button("Sip登录")
-        //   .onClick(()=>{
-        //     this.sipLogin()
-        //   })
+          Button("点击测试")
+            .onClick(()=>{
+              const params:CallPageParams = {
+                isCaller:false
+              }
+              console.log("navigator path " + this.pathStack)
+              this.pathStack?.pushPath({
+                name:"CallPage",
+                param:params
+              });
+              // this.pathStack?.pushPath({
+              //   name:"CallPage",
+              // })
+            })
+        }
+        .width('100%')
       }
-      .width('100%')
+      .height('100%')
     }
-    .height('100%')
   }
 
   testButtonClick(){

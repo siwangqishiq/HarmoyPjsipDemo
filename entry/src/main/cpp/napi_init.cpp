@@ -120,6 +120,7 @@ static napi_value NAPI_Global_SipAppStart(napi_env env, napi_callback_info info)
         sipApp = nullptr;
     }
     sipApp = new SipApp();
+    sipApp->initEnv(env);
     
     napi_value ret = nullptr;
     return ret;
@@ -163,25 +164,23 @@ static napi_value NAPI_Global_RegisterSipObserver(napi_env env, napi_callback_in
     size_t argc = 1;
     napi_value args[1] = {nullptr};
     napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
-    
-    napi_ref observerRef;
-    napi_create_reference(env, args[0], 1, &observerRef);
-    
-    napi_value onDisconnectFunc;
-    napi_get_named_property(env, args[0], "onDisconnect", &onDisconnectFunc);
-    
-    NLOGI("call disconnect thread id : %{public}d", std::this_thread::get_id());
-    napi_value callIdValue;
-    napi_create_int32(env, 123, &callIdValue);
-    napi_call_function(env, args[0], onDisconnectFunc, 1, &callIdValue, nullptr);
-    napi_value ret = nullptr;
-    return ret;
+    if(sipApp != nullptr){
+        sipApp->registerObserver(args[0]);
+        NLOGI("after register observer list size:%{public}d", sipApp->getObserverList().size());
+    }
+    return nullptr;
 }
 
 static napi_value NAPI_Global_UnregisterSipObserver(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
     
-    napi_value ret = nullptr;
-    return ret;
+    if(sipApp != nullptr){
+        sipApp->UnRegisterObserver(args[0]);
+        NLOGI("after Unregister observer list size:%{public}d", sipApp->getObserverList().size());
+    }
+    return nullptr;
 }
 
 EXTERN_C_START

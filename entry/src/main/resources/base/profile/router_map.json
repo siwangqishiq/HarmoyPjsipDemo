@@ -1,0 +1,12 @@
+{
+  "routerMap": [
+    {
+      "name": "CallPage",
+      "pageSourceFile": "src/main/ets/pages/CallPage.ets",
+      "buildFunction": "CallPageBuilder",
+      "data": {
+        "description": "this is CallPage page"
+      }
+    }
+  ]
+}

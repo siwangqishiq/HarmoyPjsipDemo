@@ -21,6 +21,7 @@ struct Index {
   observer:SipObserver = {
     onRegStateChanged: (code: number, msg?: string): void => {
       console.log("onRegStateChanged code " + code +"  " + msg)
+      this.message = "onRegStateChanged code: " + code +"  reason" + msg??""
     },
     onIncomingCall: (callId: string, info?: string): void => {
       console.log("onIncomingCall callId " + callId)
@@ -49,9 +50,10 @@ struct Index {
     Navigation(this.pathStack){
       Row() {
         Column() {
-          Text("TestFunc").fontSize(30)
+          Text(this.message).fontSize(30)
             .onClick((v)=>{
               NativeBridge.RegisterSipObserver(this.observer)
+              this.message = ""
             })
 
           Text("PjsipVersion:" + this.pjsipVersion)

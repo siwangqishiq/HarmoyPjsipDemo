@@ -10,9 +10,10 @@
 #include "pjsua2.hpp"
 #include <memory>
 
+class SipApp;
 class MyAccount : public pj::Account {
 public:
-    MyAccount();
+    MyAccount(SipApp *ctx);
     virtual ~MyAccount();
     
     virtual void create(std::string account, std::string password);
@@ -21,7 +22,7 @@ public:
     
     virtual void onIncomingCall(pj::OnIncomingCallParam &iprm) override;
 private:
-    
+    SipApp *appContext = nullptr;
 };
 
 #endif //HARMOYPJSIPDEMO_MY_ACCOUNT_H

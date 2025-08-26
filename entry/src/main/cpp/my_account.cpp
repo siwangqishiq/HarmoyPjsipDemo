@@ -9,8 +9,9 @@
 #include "sip_app.h"
 #include <thread>
 
-MyAccount::MyAccount(){
+MyAccount::MyAccount(SipApp *ctx){
     NLOGI("MyAccount construct");
+    appContext = ctx;
 }
 
 MyAccount::~MyAccount(){
@@ -38,9 +39,14 @@ void MyAccount::create(std::string account, std::string password){
 }
     
 void MyAccount::onRegState(pj::OnRegStateParam &prm) {
+    const int code = prm.code;
+    std::string msg = prm.reason;
+    
     NLOGI("MyAccount on reg state changed code = %{public}d" , prm.code);
     NLOGI("MyAccount on reg state changed reason = %{public}s" , prm.reason.c_str());
     NLOGI("MyAccount onRegState thread id : %{public}d", std::this_thread::get_id());
+    
+    appContext->fireObserverCallback(OBSERVER_METHOD_REGSTATE_CHANGE, code, msg);
 }
     
 void MyAccount::onIncomingCall(pj::OnIncomingCallParam &iprm){

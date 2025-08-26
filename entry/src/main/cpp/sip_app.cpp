@@ -38,17 +38,27 @@ SipApp::SipApp(){
 
 void SipApp::initEnv(napi_env env){
     this->g_env = env;
-//    napi_create_threadsafe_function(env, 
-//        napi_value func, 
-//        nullptr, 
-//        napi_value async_resource_name, 
-//        0, 
-//        1, 
-//        nullptr, 
-//        nullptr, 
-//        nullptr, 
-//        napi_threadsafe_function_call_js call_js_cb, 
-//        &tsfn);
+
+    napi_value resource_name;
+    napi_create_string_utf8(env, "SipObserverTsfn", NAPI_AUTO_LENGTH, &resource_name);
+
+    napi_status result = napi_create_threadsafe_function(env, 
+       nullptr, 
+       nullptr, 
+       resource_name, 
+       0, 
+       1, 
+       nullptr, 
+       nullptr, 
+       this, 
+       invokeJs, 
+       &g_tsfn);
+    
+    if(result == napi_ok){
+        NLOGI("create tsfn success");
+    }else{
+        NLOGE("create tsfn failed.");
+    }//end if
 }
     
 SipApp::~SipApp(){
@@ -59,7 +69,7 @@ SipApp::~SipApp(){
 void SipApp::sipLogin(std::string account, std::string password){
     NLOGI("SipApp sipLogin");
     
-    account_ = std::make_shared<MyAccount>();
+    account_ = std::make_shared<MyAccount>(this);
     account_->create(account, password);
     
     NLOGI("sipLogin thread id : %{public}d", std::this_thread::get_id());
@@ -116,5 +126,73 @@ void SipApp::UnRegisterObserver(napi_value observer){
             break;
         }
     }//end for each
+}
+
+void SipApp::fireObserverCallback(std::string methodName,int what,std::string params){
+    NLOGI("fireObserverCallback");
+    if(observerRefList.empty()){
+        return;
+    }
+    
+    SipAppJsParams *jsParams = new SipAppJsParams();
+    jsParams->method = methodName;
+    jsParams->code = what;
+    jsParams->params = params;
+    
+    napi_call_threadsafe_function(g_tsfn, jsParams, napi_tsfn_nonblocking);
+}
+
+void SipApp::jsMethodRouter(SipAppJsParams *jsParams){
+    NLOGI("SipApp jsMethodRouter");
+    if(jsParams == nullptr){
+        return;
+    }
+    
+    NLOGI("SipApp jsMethodRouter method %{public}s", jsParams->method.c_str());
+    NLOGI("jsMethodRouter thread id : %{public}d", std::this_thread::get_id());
+    
+    std::vector<napi_ref> listCopy = this->observerRefList;
+    if(listCopy.empty()){
+        return;
+    }
+    
+    for(napi_ref &ref : listCopy){
+        napi_value ob;
+        if(napi_get_reference_value(g_env, ref, &ob) != napi_ok){
+            continue;
+        }
+        
+        napi_value jsFunc;
+        if(napi_get_named_property(g_env, ob, jsParams->method.c_str(), &jsFunc)!= napi_ok){
+            continue;
+        }
+        
+        if(OBSERVER_METHOD_REGSTATE_CHANGE == jsParams->method){
+            const int paramsCount = 2;
+            napi_value argv[paramsCount];
+            napi_create_int32(g_env, jsParams->code, &argv[0]);
+            napi_value jsMsg;
+            napi_create_string_utf8(g_env, jsParams->params.c_str(), NAPI_AUTO_LENGTH, &jsMsg);
+            argv[1] = jsMsg;
+            napi_call_function(g_env, ob, jsFunc, paramsCount, argv, nullptr);
+        }else{
+            const int paramsCount = 1;
+            napi_value argv[paramsCount];
+            napi_create_string_utf8(g_env, jsParams->params.c_str(), NAPI_AUTO_LENGTH, &argv[0]);
+            napi_call_function(g_env, ob, jsFunc, paramsCount, argv, nullptr);
+        }//end if
+    }//end for each
+}
+
+void SipApp::invokeJs(napi_env env, napi_value js_cb, void* context, void* data){
+    NLOGI("invokeJs thread id : %{public}d", std::this_thread::get_id());
+    
+    SipApp *app = static_cast<SipApp *>(context);
+    SipAppJsParams* jsParams = static_cast<SipAppJsParams *>(data);
+    app->jsMethodRouter(jsParams);
+    
+    if(jsParams){
+        delete jsParams;
+    }
 }
 

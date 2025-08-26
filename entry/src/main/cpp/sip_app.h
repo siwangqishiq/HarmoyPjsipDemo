@@ -19,6 +19,18 @@
 const std::string SIP_PROTOCOL = "sip:";
 const std::string SIP_SERVER = "192.168.102.72:5060";
 
+const std::string OBSERVER_METHOD_REGSTATE_CHANGE = "onRegStateChanged";
+const std::string OBSERVER_METHOD_INCOMING_CALL = "onIncomingCall";
+const std::string OBSERVER_METHOD_START_AUDIO = "onStartAudio";
+const std::string OBSERVER_METHOD_DISCONNECT = "onDisconnect";
+
+struct SipAppJsParams{
+    SipApp* appContext;
+    std::string method;
+    int code;
+    std::string params;
+};
+
 class SipApp {
 public:
     static const std::string TAG;
@@ -43,9 +55,15 @@ public:
     std::vector<napi_ref>& getObserverList(){
         return observerRefList;
     }
+    
+    void fireObserverCallback(std::string methodName,int what,std::string params);
+    
+    void jsMethodRouter(SipAppJsParams *jsParams);
+    
+    static void invokeJs(napi_env env, napi_value js_cb, void* context, void* data);
 private:
     napi_env g_env;
-    napi_threadsafe_function tsfn;
+    napi_threadsafe_function g_tsfn;
     
     std::vector<napi_ref> observerRefList;
     

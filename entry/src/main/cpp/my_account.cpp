@@ -8,6 +8,7 @@
 #include "log.h"
 #include "sip_app.h"
 #include <thread>
+#include "my_call.h"
 
 MyAccount::MyAccount(SipApp *ctx){
     NLOGI("MyAccount construct");
@@ -33,6 +34,9 @@ void MyAccount::create(std::string account, std::string password){
     authInfo.data = password;
     authInfo.realm = "*";
     accountConfig.regConfig.timeoutSec = 60;
+
+    // accountConfig.natConfig.iceEnabled = true;
+    // accountConfig.callConfig.prackUse = PJSUA_100REL_NOT_USED;
     
     accountConfig.sipConfig.authCreds.push_back(std::move(authInfo));
     Account::create(accountConfig);
@@ -50,5 +54,29 @@ void MyAccount::onRegState(pj::OnRegStateParam &prm) {
 }
     
 void MyAccount::onIncomingCall(pj::OnIncomingCallParam &iprm){
-    NLOGI("MyAccount onIncomingCall callid:%d" , iprm.callId);
+    int callId = iprm.callId;
+    std::string wholeMsg = iprm.rdata.wholeMsg;
+    NLOGI("MyAccount onIncomingCall callid:%{public}d" , callId);
+    NLOGI("MyAccount onIncomingCall wholeMsg:%{public}s" , wholeMsg.c_str());
+    
+    try{
+        std::shared_ptr<MyCall> call = std::make_shared<MyCall>(this->appContext, *this, iprm.callId);
+        call->setCallId(iprm.rdata.info);
+        
+        pj::CallOpParam opParam;
+        opParam.statusCode = PJSIP_SC_RINGING;
+        call->answer(opParam);
+        this->appContext->getCallList().emplace_back(call);
+        
+        //callback
+        this->appContext->fireObserverCallback(OBSERVER_METHOD_INCOMING_CALL, 0, call->getCallId());
+    } catch (std::exception &e) {
+        NLOGE("onIncomingCall error : %{public}s", e.what());
+    }
+}
+
+void MyAccount::onInstantMessage(pj::OnInstantMessageParam &prm){
+    NLOGI("MyAccount onInstantMessage from:%{public}s to:%{public}s" , 
+          prm.fromUri.c_str(), prm.toUri.c_str());
+    NLOGI("MyAccount onInstantMessage message:%{public}s" , prm.msgBody.c_str());
 }

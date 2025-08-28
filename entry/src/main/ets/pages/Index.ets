@@ -25,6 +25,14 @@ struct Index {
     },
     onIncomingCall: (callId: string, info?: string): void => {
       console.log("onIncomingCall callId " + callId)
+      const params:CallPageParams = {
+        isCaller:false,
+        callId:callId
+      }
+      this.pathStack?.pushPath({
+        name:"CallPage",
+        param:params
+      });
     },
     onStartAudio: (callId: string): void => {
       console.log("onStartAudio callId " + callId)
@@ -101,20 +109,13 @@ struct Index {
               NativeBridge.SipLogin(this.inputAccount, this.inputPassword)
             })
 
-          Button("点击测试")
-            .onClick(()=>{
-              const params:CallPageParams = {
-                isCaller:false
-              }
-              console.log("navigator path " + this.pathStack)
-              this.pathStack?.pushPath({
-                name:"CallPage",
-                param:params
-              });
-              // this.pathStack?.pushPath({
-              //   name:"CallPage",
-              // })
-            })
+          // Button("点击测试")
+          //   .onClick(()=>{
+          //
+          //     // this.pathStack?.pushPath({
+          //     //   name:"CallPage",
+          //     // })
+          //   })
         }
         .width('100%')
       }
@@ -126,8 +127,5 @@ struct Index {
     NativeBridge.registerCallback2( this.counter, (v:number)=>{
       this.counter = v
     })
-  }
-
-  sipLogin():void{
   }
 }

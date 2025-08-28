@@ -2,7 +2,8 @@ import NativeBridge from 'libyxpjsip.so';
 import { SipObserver } from './SipObserver';
 
 export interface CallPageParams{
-  isCaller:boolean
+  isCaller:boolean,
+  callId?:string
 }
 
 @Builder
@@ -17,16 +18,17 @@ export struct CallPage {
 
   observer:SipObserver = {
     onRegStateChanged: (code: number, msg?: string): void => {
-      console.log("CallPage onRegStateChanged code " + code +"  " + msg)
+      console.log("native_log CallPage onRegStateChanged code " + code +"  " + msg)
     },
     onIncomingCall: (callId: string, info?: string): void => {
-      console.log("CallPage onIncomingCall callId " + callId)
+      console.log("native_log CallPage onIncomingCall callId " + callId)
     },
     onStartAudio: (callId: string): void => {
-      console.log("CallPage onStartAudio callId " + callId)
+      console.log("native_log CallPage onStartAudio callId " + callId)
     },
     onDisconnect: (callId: string): void => {
-      console.log("CallPage native_log onDisconnect callId " + callId)
+      console.log("native_log CallPage onDisconnect callId " + callId)
+      this.pathStack?.pop()
     }
   }
 
@@ -50,10 +52,15 @@ export struct CallPage {
 
           Button("接通")
             .margin({top:8})
+            .onClick((v)=>{
+              NativeBridge.SipCallAccept(this.params?.callId);
+            })
+
+
           Button("挂断")
             .margin({top:8})
             .onClick(()=>{
-              this.pathStack?.pop()
+
             })
         }
         .width('100%')
@@ -63,6 +70,7 @@ export struct CallPage {
     .backgroundColor(Color.White)
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack
+      this.params = context.pathInfo.param as CallPageParams
     })
   }
 }

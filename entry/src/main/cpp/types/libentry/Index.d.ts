@@ -20,4 +20,9 @@ export const RegisterSipObserver:(observer:object)=>void;
 
 export const UnregisterSipObserver:(observer:object)=>void;
 
+export const SipCallAccept:(callId:string)=>void;
+
+export const SipCallHangup:(callId:string, isBusy:boolean)=>void;
+
+
 

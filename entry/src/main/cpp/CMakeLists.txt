@@ -23,7 +23,7 @@ add_library(${lib_name} SHARED
                my_account.cpp
                my_call.cpp)
 
-target_link_libraries(${lib_name} PUBLIC ${hilog-lib} libace_napi.z.so)
+target_link_libraries(${lib_name} PUBLIC ${hilog-lib} ohaudio libace_napi.z.so)
 
 # 将三方库的头文件加入工程中
 target_include_directories(${lib_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/include/)

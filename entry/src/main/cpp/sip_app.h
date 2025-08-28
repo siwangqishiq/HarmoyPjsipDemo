@@ -6,6 +6,7 @@
 
 #pragma once
 #include "my_account.h"
+#include "my_call.h"
 #ifndef HARMOYPJSIPDEMO_SIP_APP_H
 #define HARMOYPJSIPDEMO_SIP_APP_H
 
@@ -17,7 +18,7 @@
 #include <vector>
 
 const std::string SIP_PROTOCOL = "sip:";
-const std::string SIP_SERVER = "192.168.102.72:5060";
+const std::string SIP_SERVER = "192.168.101.198:5060";
 
 const std::string OBSERVER_METHOD_REGSTATE_CHANGE = "onRegStateChanged";
 const std::string OBSERVER_METHOD_INCOMING_CALL = "onIncomingCall";
@@ -30,6 +31,8 @@ struct SipAppJsParams{
     int code;
     std::string params;
 };
+
+class MyCall;
 
 class SipApp {
 public:
@@ -60,7 +63,16 @@ public:
     
     void jsMethodRouter(SipAppJsParams *jsParams);
     
+    std::vector<std::shared_ptr<MyCall>>& getCallList(){
+        return callList;
+    }
+    
     static void invokeJs(napi_env env, napi_value js_cb, void* context, void* data);
+    
+    void hangup(std::string &callId, bool isBusy);
+    void accept(std::string &callId);
+    
+    bool removeCall(std::string &callId);
 private:
     napi_env g_env;
     napi_threadsafe_function g_tsfn;
@@ -69,6 +81,10 @@ private:
     
     std::unique_ptr<pj::Endpoint> endpoint_;
     std::shared_ptr<MyAccount> account_ = nullptr;
+    
+    std::vector<std::shared_ptr<MyCall>> callList;
+    
+    std::shared_ptr<MyCall> findCallByCallId(std::string &callId);
 };
 
 #endif //HARMOYPJSIPDEMO_SIP_APP_H

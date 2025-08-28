@@ -39,10 +39,10 @@ static napi_value NAPI_Global_getNativeString(napi_env env, napi_callback_info i
     napi_value str;
     std::string native_str = "你好世界";
     napi_create_string_utf8(env, native_str.c_str(), native_str.length(), &str);
-    const char *test = "hello";
+//    const char *test = "hello";
 //    Log::i("native", "1get native string = %{public}s",test);
-    NLOGI("1get native string = %{public}s",native_str.c_str());
-    NLOGI("1get native string = 1 + 2 = %{public}i",1+2);
+//    NLOGI("1get native string = %{public}s",native_str.c_str());
+//    NLOGI("1get native string = 1 + 2 = %{public}i",1+2);
 //    Log::i("native", "get native string end");
     return str;
 }
@@ -98,19 +98,6 @@ static napi_value NAPI_Global_findCodecFormats(napi_env env, napi_callback_info 
     if(sipApp == nullptr){
         return ret;
     }
-
-    sipApp->getEndpoint()->audDevManager().setNullDev();
-    
-    pj::CodecInfoVector2 codecs = sipApp->getEndpoint()->codecEnum2();
-    std::string result = "";
-    for(auto &codec : codecs){
-        NLOGI("codec: %{public}s",codec.codecId.c_str());
-        result += codec.codecId;
-        result += "\n";
-    }//end for each
-    
-   
-    napi_create_string_utf8(env, result.c_str(), result.length(), &ret);
     return ret;
 }
 
@@ -183,6 +170,24 @@ static napi_value NAPI_Global_UnregisterSipObserver(napi_env env, napi_callback_
     return nullptr;
 }
 
+static napi_value NAPI_Global_SipCallAccept(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    char buf[1024];
+    size_t size = 0;
+    napi_get_value_string_utf8(env, args[0], buf, 1024, &size);
+    std::string callId(buf,buf + size);
+    
+    if(sipApp != nullptr){
+        sipApp->accept(callId);
+    }
+    return nullptr;
+}
+static napi_value NAPI_Global_SipCallHangup(napi_env env, napi_callback_info info) {
+    return nullptr;
+}
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -198,7 +203,10 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"SipLogin", nullptr, NAPI_Global_SipLogin, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"RegisterSipObserver", nullptr, NAPI_Global_RegisterSipObserver, nullptr, nullptr, nullptr, napi_default,
          nullptr},
-        {"UnregisterSipObserver", nullptr, NAPI_Global_UnregisterSipObserver, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"UnregisterSipObserver", nullptr, NAPI_Global_UnregisterSipObserver, nullptr, nullptr, nullptr, napi_default,
+         nullptr},
+        {"SipCallAccept", nullptr, NAPI_Global_SipCallAccept, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SipCallHangup", nullptr, NAPI_Global_SipCallHangup, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

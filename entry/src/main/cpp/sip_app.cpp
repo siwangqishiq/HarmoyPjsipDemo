@@ -28,9 +28,16 @@ SipApp::SipApp(){
         transConfig.port = 5060;
         auto transId = endpoint_->transportCreate(PJSIP_TRANSPORT_TCP, transConfig);
         NLOGI("SipApp transportCreate ID = %{public}d", transId);
-        
+
         endpoint_->libStart();
         NLOGI("SipApp endpoint lib started");
+        
+//        endpoint_->audDevManager().setNullDev();
+        pj::AudioDevInfoVector2 devList = endpoint_->audDevManager().enumDev2();
+        NLOGI("deviceList size = %{public}d", devList.size());
+        for(auto &dev : devList){
+            NLOGI("dev name : %{public}s", dev.name.c_str());
+        }
     } catch (std::exception &e) {
         NLOGE("SipApp endpoint lib create error %s", e.what());
     }
@@ -178,7 +185,7 @@ void SipApp::jsMethodRouter(SipAppJsParams *jsParams){
         }else{
             const int paramsCount = 1;
             napi_value argv[paramsCount];
-            napi_create_string_utf8(g_env, jsParams->params.c_str(), NAPI_AUTO_LENGTH, &argv[0]);
+            napi_create_string_utf8(g_env, jsParams->params.c_str(), NAPI_AUTO_LENGTH, argv);
             napi_call_function(g_env, ob, jsFunc, paramsCount, argv, nullptr);
         }//end if
     }//end for each
@@ -194,5 +201,52 @@ void SipApp::invokeJs(napi_env env, napi_value js_cb, void* context, void* data)
     if(jsParams){
         delete jsParams;
     }
+}
+
+std::shared_ptr<MyCall> SipApp::findCallByCallId(std::string &callId){
+    std::shared_ptr<MyCall> result = nullptr;
+    for(std::shared_ptr<MyCall> &ptr : callList){
+        if(ptr->getCallId() == callId){
+            result = ptr;
+            break;
+        }
+    }//end for each
+    return result;
+}
+
+void SipApp::hangup(std::string &callId,bool isBusy){
+    auto call = findCallByCallId(callId);
+    if(call == nullptr){
+        return;
+    }
+    
+    pj::CallOpParam param;
+    if(isBusy){
+        param.statusCode = PJSIP_SC_BUSY_HERE;
+    }else{
+        param.statusCode = PJSIP_SC_DECLINE;
+    }
+    call->hangup(param);
+}
+
+void SipApp::accept(std::string &callId){
+    auto call = findCallByCallId(callId);
+    if(call == nullptr){
+        return;
+    }
+    
+    pj::CallOpParam param;
+    param.statusCode = PJSIP_SC_OK;
+    call->answer(param);
+}
+
+bool SipApp::removeCall(std::string &callId){
+    for(auto it = callList.begin();it != callList.end();++it){
+        if(callId == (*it)->getCallId()){
+            callList.erase(it);
+            return true;        
+        }
+    }//end for each
+    return false;
 }
 

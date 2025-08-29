@@ -45,27 +45,21 @@ void MyCall::onCallMediaState(pj::OnCallMediaStateParam &prm){
                 NLOGI("MyCall is Right State index:%{public}d",i);
                 
                 pj::AudioMedia aud_med = getAudioMedia(i);
-
+                
                 pj::AudDevManager& adm = appContext->getEndpoint()->audDevManager();
                 int capDev = adm.getCaptureDev();
                 int playDev = adm.getPlaybackDev();
                 NLOGI("CaptureDev=%{public}d, PlaybackDev=%{public}d", capDev, playDev);
                 
-                NLOGI("MyCall try getCaptureDevMedia");
-                if(capDev >= 0){
-                    adm.getCaptureDevMedia().startTransmit(aud_med);
-                }else{
-                    NLOGI("MyCall try getCaptureDevMedia but capDev = %{public}d", capDev);
-                }
-                
                 NLOGI("MyCall try getPlaybackDevMedia");
-                if(playDev >= 0){
-                    aud_med.startTransmit(adm.getPlaybackDevMedia());
-                }else{
-                    NLOGI("MyCall try getPlaybackDevMedia but playDev = %{public}d", playDev);
-                }
+                aud_med.startTransmit(adm.getPlaybackDevMedia());
+                NLOGI("MyCall try startTransmit getPlaybackDevMedia end");
                 
-                NLOGI("MyCall onCallMediaState Started");
+                NLOGI("MyCall try getCaptureDevMedia");
+                adm.getCaptureDevMedia().startTransmit(aud_med);
+                NLOGI("MyCall try startTransmit end");
+                                
+                NLOGI("MyCall fireObserverCallback Started");
                 appContext->fireObserverCallback(OBSERVER_METHOD_START_AUDIO, -1, getCallId());
                 break;
             }

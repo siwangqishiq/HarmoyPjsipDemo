@@ -10,6 +10,13 @@
 
 const std::string SipApp::TAG = "sip_app";
 
+class MyLogger : public pj::LogWriter{
+public:
+    virtual void write(const pj::LogEntry &entry) override {
+        NLOGI("pjsip:%{public}s", entry.msg.c_str());
+    }
+};
+
 SipApp::SipApp(){
     NLOGI("SipApp construct");
     endpoint_ = std::make_unique<pj::Endpoint>();
@@ -21,6 +28,10 @@ SipApp::SipApp(){
         config.uaConfig.maxCalls = 4;
         config.uaConfig.userAgent = "panyi_ua";
         
+        config.logConfig.level = 5;          // 日志等级，范围0-5
+        config.logConfig.consoleLevel = 4;   // 控制台打印等级
+        config.logConfig.writer = new MyLogger(); // 自定义日志写入器
+        
         endpoint_->libInit(config);
         NLOGI("SipApp endpoint lib init");
         
@@ -28,16 +39,29 @@ SipApp::SipApp(){
         transConfig.port = 5060;
         auto transId = endpoint_->transportCreate(PJSIP_TRANSPORT_TCP, transConfig);
         NLOGI("SipApp transportCreate ID = %{public}d", transId);
-
         endpoint_->libStart();
         NLOGI("SipApp endpoint lib started");
         
+//        NLOGI("SipApp endpoint setNullDev");
 //        endpoint_->audDevManager().setNullDev();
+        
         pj::AudioDevInfoVector2 devList = endpoint_->audDevManager().enumDev2();
         NLOGI("deviceList size = %{public}d", devList.size());
         for(auto &dev : devList){
             NLOGI("dev name : %{public}s", dev.name.c_str());
         }
+        
+//        pj::AudDevManager &audioMgr = endpoint_->audDevManager();
+//        int capDev = audioMgr.getCaptureDev();
+//        int playDev = audioMgr.getPlaybackDev();
+//        NLOGI("Before set CaptureDev=%{public}d, PlaybackDev=%{public}d", capDev, playDev);
+//        for(int i = 0 ; i < devList.size();i++){
+//            audioMgr.setCaptureDev(i);
+//            audioMgr.setPlaybackDev(i);
+//        }//end for i
+//        capDev = audioMgr.getCaptureDev();
+//        playDev = audioMgr.getPlaybackDev();
+//        NLOGI("After set CaptureDev=%{public}d, PlaybackDev=%{public}d", capDev, playDev);
     } catch (std::exception &e) {
         NLOGE("SipApp endpoint lib create error %s", e.what());
     }

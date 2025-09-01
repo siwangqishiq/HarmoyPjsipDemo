@@ -14,7 +14,7 @@ const std::string SipApp::TAG = "sip_app";
 class MyLogger : public pj::LogWriter{
 public:
     virtual void write(const pj::LogEntry &entry) override {
-//        NLOGI("pjsip:%{public}s", entry.msg.c_str());
+        NLOGI("pjsip:%{public}s", entry.msg.c_str());
     }
 };
 
@@ -25,7 +25,7 @@ SipApp::SipApp(){
     endpoint_ = std::make_unique<pj::Endpoint>();
     try{
         //inject audio backend impl
-        //endpoint_->setCustomAudioBackend(nullptr);
+//        endpoint_->setCustomAudioBackend(nullptr);
         endpoint_->setCustomAudioBackend(new OhAudioBackEnd());
         
         endpoint_->libCreate();

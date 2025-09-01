@@ -29,7 +29,7 @@ void MyCall::onCallMediaState(pj::OnCallMediaStateParam &prm){
     try{
         // NLOGI("MyCall try getAudioMedia");
         // pj::AudioMedia audMed = getAudioMedia(-1);
-
+        
         // NLOGI("MyCall try startTransmit");
         // appContext->getEndpoint()->audDevManager().getCaptureDevMedia().startTransmit(audMed);
 
@@ -64,9 +64,6 @@ void MyCall::onCallMediaState(pj::OnCallMediaStateParam &prm){
                 break;
             }
         }//end for i
-
-
-        
     } catch (std::exception &e) {
         NLOGE("MyCall onCallMediaState ERROR:${public}s", e.what());
     }

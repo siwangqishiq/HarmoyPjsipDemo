@@ -7,6 +7,7 @@
 #include "sip_app.h"
 #include "log.h"
 #include "my_account.h"
+#include "oh_audio_backend.h"
 
 const std::string SipApp::TAG = "sip_app";
 
@@ -17,10 +18,16 @@ public:
     }
 };
 
+
+
 SipApp::SipApp(){
     NLOGI("SipApp construct");
     endpoint_ = std::make_unique<pj::Endpoint>();
     try{
+        //inject audio backend impl
+        //endpoint_->setCustomAudioBackend(nullptr);
+        endpoint_->setCustomAudioBackend(new OhAudioBackEnd());
+        
         endpoint_->libCreate();
         
         pj::EpConfig config;

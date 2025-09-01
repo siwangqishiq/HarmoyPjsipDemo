@@ -39,7 +39,7 @@
 
 /* GSM codec */
 #ifndef PJMEDIA_HAS_GSM_CODEC
-/* #undef PJMEDIA_HAS_GSM_CODEC */
+#define PJMEDIA_HAS_GSM_CODEC 0
 #endif
 
 /* #undef PJMEDIA_EXTERNAL_GSM_CODEC */

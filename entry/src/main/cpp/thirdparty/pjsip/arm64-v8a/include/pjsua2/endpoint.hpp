@@ -28,6 +28,8 @@
 #include <list>
 #include <map>
 
+class CustomAudioBackend;
+
 /** PJSUA2 API is inside pj namespace */
 namespace pj
 {
@@ -1129,6 +1131,7 @@ struct PendingJob
     virtual ~PendingJob() {}
 };
 
+
 //////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1136,11 +1139,14 @@ struct PendingJob
  * one instance of pjsua library in an application, hence this class
  * is a singleton.
  */
+
 class Endpoint
 {
 public:
     /** Retrieve the singleton instance of the endpoint */
     static Endpoint &instance() PJSUA2_THROW(Error);
+
+    void setCustomAudioBackend(CustomAudioBackend *audioBackend);
 
     /** Default constructor */
     Endpoint();

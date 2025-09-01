@@ -14,7 +14,7 @@ const std::string SipApp::TAG = "sip_app";
 class MyLogger : public pj::LogWriter{
 public:
     virtual void write(const pj::LogEntry &entry) override {
-        NLOGI("pjsip:%{public}s", entry.msg.c_str());
+//        NLOGI("pjsip:%{public}s", entry.msg.c_str());
     }
 };
 

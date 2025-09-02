@@ -16,6 +16,8 @@ export struct CallPage {
   pathStack?: NavPathStack
   params?:CallPageParams
 
+  @State callConnected : boolean = false
+
   observer:SipObserver = {
     onRegStateChanged: (code: number, msg?: string): void => {
       console.log("native_log CallPage onRegStateChanged code " + code +"  " + msg)
@@ -25,6 +27,7 @@ export struct CallPage {
     },
     onStartAudio: (callId: string): void => {
       console.log("native_log CallPage onStartAudio callId " + callId)
+      this.callConnected = true
     },
     onDisconnect: (callId: string): void => {
       console.log("native_log CallPage onDisconnect callId " + callId)
@@ -50,18 +53,28 @@ export struct CallPage {
               NativeBridge.RegisterSipObserver(this.observer)
             })
 
-          Button("接通")
-            .margin({top:8})
-            .onClick((v)=>{
-              NativeBridge.SipCallAccept(this.params?.callId);
-            })
+          if(this.callConnected){//电话接通
+            Button("挂断电话")
+              .backgroundColor(Color.Red)
+              .fontColor(Color.White)
+              .margin({top:8})
+              .onClick(()=>{
+                NativeBridge.SipCallHangup(this.params?.callId,false);
+              })
+          }else{
+            Button("接通")
+              .margin({top:8})
+              .onClick((v)=>{
+                NativeBridge.SipCallAccept(this.params?.callId);
+              })
 
+            Button("挂断")
+              .margin({top:8})
+              .onClick(()=>{
+                NativeBridge.SipCallHangup(this.params?.callId,true);
+              })
+          }
 
-          Button("挂断")
-            .margin({top:8})
-            .onClick(()=>{
-
-            })
         }
         .width('100%')
       }

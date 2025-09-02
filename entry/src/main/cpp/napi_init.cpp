@@ -185,9 +185,26 @@ static napi_value NAPI_Global_SipCallAccept(napi_env env, napi_callback_info inf
     }
     return nullptr;
 }
+
 static napi_value NAPI_Global_SipCallHangup(napi_env env, napi_callback_info info) {
+    size_t argc = 2;
+    napi_value args[2] = {nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    
+    char buf[1024];
+    size_t size = 0;
+    napi_get_value_string_utf8(env, args[0], buf, 1024, &size);
+    std::string callId(buf,buf + size);
+    
+    bool isBusy = false;
+    napi_get_value_bool(env, args[1], &isBusy);
+    
+    if(sipApp != nullptr){
+        sipApp->hangup(callId, isBusy);
+    }
     return nullptr;
 }
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {

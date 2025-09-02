@@ -11,7 +11,6 @@
 #include "pjsua2.hpp"
 
 #define W_SLBufferQueueItf SLOHBufferQueueItf
-//#define W_SLBufferQueueState SLBufferQueueState
 #define W_SL_IID_BUFFERQUEUE SL_IID_OH_BUFFERQUEUE
 
 #define NUM_BUFFERS 2
@@ -166,6 +165,8 @@ void bqPlayerCallback(W_SLBufferQueueItf bq, void *context ,SLuint32 size){
 
 /* This callback handler is called every time a buffer finishes recording */
 void bqRecorderCallback(W_SLBufferQueueItf bq, void *context,SLuint32 size){
+    NLOGI("bqRecorderCallback called");
+    
     struct opensl_aud_stream *stream = (struct opensl_aud_stream*) context;
     SLresult result;
     int status;
@@ -184,11 +185,20 @@ void bqRecorderCallback(W_SLBufferQueueItf bq, void *context,SLuint32 size){
     
     if (!stream->quit_flag) {
         pjmedia_frame frame;
-        char *buf;
+        unsigned char *buf;
         
         frame.type = PJMEDIA_FRAME_TYPE_AUDIO;
-        frame.buf = buf = stream->recordBuffer[stream->recordBufIdx++];
-        frame.size = stream->recordBufferSize;
+        (*bq)->GetBuffer(bq, &buf, &size);
+//        buf = stream->recordBuffer[stream->recordBufIdx++];
+        frame.buf = buf;
+        
+        NLOGI("capture record buffsize %{public}d  size = %{public}d"
+                ,stream->recordBufferSize, size);
+        NLOGI("capture buffer data:%{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d"
+                ,buf[10],buf[11],buf[12],buf[13]
+                ,buf[14],buf[15],buf[16],buf[17]);
+        
+        frame.size = size;
         frame.timestamp.u64 = stream->rec_timestamp.u64;
         frame.bit_info = 0;
         
@@ -198,12 +208,13 @@ void bqRecorderCallback(W_SLBufferQueueItf bq, void *context,SLuint32 size){
                                      stream->param.channel_count;
         
         /* And now enqueue next buffer */
-        result = (*bq)->Enqueue(bq, buf, stream->recordBufferSize);
+        result = (*bq)->Enqueue(bq, buf, size);
         if (result != SL_RESULT_SUCCESS) {
             NLOGE("Unable to enqueue next record buffer !!! %{public}d",result);
         }
         
         stream->recordBufIdx %= NUM_BUFFERS;
+        NLOGI("bqRecorderCallback called ended.");
     }
 }
 
@@ -398,7 +409,7 @@ pj_status_t oh_create_stream(pjmedia_aud_dev_factory *f,
         SLDataSink audioSnk = {&loc_outmix, nullptr};
         
         int numIface = 2;
-        const SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE,SL_IID_VOLUME};
+        const SLInterfaceID ids[2] = {W_SL_IID_BUFFERQUEUE,SL_IID_VOLUME};
         const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
         
         //创建播放器
@@ -454,9 +465,6 @@ pj_status_t oh_create_stream(pjmedia_aud_dev_factory *f,
         }
         
         NLOGI("RegisterCallback SUCCESS");
-        
-        NLOGI("get buffer queue success22222");
-        
         stream->playerBufferSize = bufferSize;
         for (i = 0; i < NUM_BUFFERS; i++) {
             stream->playerBuffer[i] = (char *)pj_pool_alloc(stream->pool,stream->playerBufferSize);
@@ -464,6 +472,7 @@ pj_status_t oh_create_stream(pjmedia_aud_dev_factory *f,
     }
     
     if (stream->dir & PJMEDIA_DIR_CAPTURE){ //采集音频
+        NLOGI("oh_strm start to set capture");
         SLDataLocator_IODevice loc_dev = {
                                     SL_DATALOCATOR_IODEVICE,
                                     SL_IODEVICE_AUDIOINPUT,
@@ -510,7 +519,7 @@ pj_status_t oh_create_stream(pjmedia_aud_dev_factory *f,
             oh_strm_destroy(&stream->base);
             return opensl_to_pj_error(result);
         }
-        
+        NLOGI("oh_strm capture RegisterCallback");
         result = (*stream->recordBufQ)->RegisterCallback(stream->recordBufQ,
                                                          bqRecorderCallback, 
                                                          (void *) stream);
@@ -521,10 +530,13 @@ pj_status_t oh_create_stream(pjmedia_aud_dev_factory *f,
             return opensl_to_pj_error(result);
         }
         
+        NLOGI("oh_strm capture RegisterCallback success");
         stream->recordBufferSize = bufferSize;
         for (i = 0; i < NUM_BUFFERS; i++) {
             stream->recordBuffer[i] = (char *)pj_pool_alloc(stream->pool,stream->recordBufferSize);
         }//end for i;
+    
+        NLOGI("oh_strm capture recordBufferSize %{public}d", stream->recordBufferSize);
     }
     
     if (param->flags & PJMEDIA_AUD_DEV_CAP_OUTPUT_VOLUME_SETTING) {

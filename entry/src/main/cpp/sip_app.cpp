@@ -7,7 +7,7 @@
 #include "sip_app.h"
 #include "log.h"
 #include "my_account.h"
-#include "oh_audio_backend.h"
+#include "audio_backend_default.h"
 
 const std::string SipApp::TAG = "sip_app";
 

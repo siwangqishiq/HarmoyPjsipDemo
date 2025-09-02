@@ -19,7 +19,7 @@ include_directories(${NATIVERENDER_ROOT_PATH}
 
 add_library(${lib_name} SHARED
                napi_init.cpp
-               oh_audio_backend.cpp
+               audio_backend_default.cpp
                sip_app.cpp
                my_account.cpp
                my_call.cpp)

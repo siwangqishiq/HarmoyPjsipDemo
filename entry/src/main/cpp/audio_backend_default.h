@@ -9,15 +9,15 @@
 
 #include "pjmedia_custom_backend.h"
 
-class OhAudioBackEnd: public CustomAudioBackend {
+class AudioBackendDefault: public CustomAudioBackend {
 public:
     virtual pjmedia_aud_dev_factory* buildFactory(pj_pool_factory *pf) override;
-
+    
     virtual pj_status_t factoryInit(pjmedia_aud_dev_factory *f) override;
     virtual pj_status_t factoryDestroy(pjmedia_aud_dev_factory *f) override;
     virtual pj_status_t factoryRefresh(pjmedia_aud_dev_factory *f) override;
     virtual unsigned factoryGetDevCount(pjmedia_aud_dev_factory *f) override;
-
+    
     virtual pj_status_t factoryGetDevInfo(pjmedia_aud_dev_factory *f,
                                             unsigned index,
                                             pjmedia_aud_dev_info *info) override;

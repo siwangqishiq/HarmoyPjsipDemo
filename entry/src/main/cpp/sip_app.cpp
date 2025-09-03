@@ -26,7 +26,7 @@ SipApp::SipApp(){
     try{
         //inject audio backend impl
 //        endpoint_->setCustomAudioBackend(nullptr);
-        endpoint_->setCustomAudioBackend(new OhAudioBackEnd());
+        endpoint_->setCustomAudioBackend(new AudioBackendDefault());
         
         endpoint_->libCreate();
         

@@ -147,6 +147,7 @@ void bqPlayerCallback(W_SLBufferQueueItf bq, void *context ,SLuint32 size){
         frame.bit_info = 0;
         
         status = (*stream->play_cb)(stream->user_data, &frame);
+//        pj_bzero(buf, stream->playerBufferSize);
         if (status != PJ_SUCCESS || frame.type != PJMEDIA_FRAME_TYPE_AUDIO)
             pj_bzero(buf, stream->playerBufferSize);
         
@@ -192,11 +193,11 @@ void bqRecorderCallback(W_SLBufferQueueItf bq, void *context,SLuint32 size){
 //        buf = stream->recordBuffer[stream->recordBufIdx++];
         frame.buf = buf;
         
-        NLOGI("capture record buffsize %{public}d  size = %{public}d"
-                ,stream->recordBufferSize, size);
-        NLOGI("capture buffer data:%{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d"
-                ,buf[10],buf[11],buf[12],buf[13]
-                ,buf[14],buf[15],buf[16],buf[17]);
+//        NLOGI("capture record buffsize %{public}d  size = %{public}d"
+//                ,stream->recordBufferSize, size);
+//        NLOGI("capture buffer data:%{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d %{public}d"
+//                ,buf[10],buf[11],buf[12],buf[13]
+//                ,buf[14],buf[15],buf[16],buf[17]);
         
         frame.size = size;
         frame.timestamp.u64 = stream->rec_timestamp.u64;

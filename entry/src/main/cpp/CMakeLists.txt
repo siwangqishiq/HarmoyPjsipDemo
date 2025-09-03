@@ -20,11 +20,12 @@ include_directories(${NATIVERENDER_ROOT_PATH}
 add_library(${lib_name} SHARED
                napi_init.cpp
                audio_backend_default.cpp
+               audio_backend_oha.cpp
                sip_app.cpp
                my_account.cpp
                my_call.cpp)
 
-target_link_libraries(${lib_name} PUBLIC ${hilog-lib} ohaudio libace_napi.z.so libOpenSLES.so)
+target_link_libraries(${lib_name} PUBLIC ${hilog-lib} libace_napi.z.so libOpenSLES.so libohaudio.so)
 
 # 将三方库的头文件加入工程中
 target_include_directories(${lib_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pjsip/${OHOS_ARCH}/include/)

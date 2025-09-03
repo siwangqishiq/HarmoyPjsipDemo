@@ -21,7 +21,7 @@ public:
     virtual pj_status_t factoryGetDevInfo(pjmedia_aud_dev_factory *f,
                                             unsigned index,
                                             pjmedia_aud_dev_info *info) override;
-
+    
     virtual pj_status_t factoryDefaultParam(pjmedia_aud_dev_factory *f,
                                              unsigned index,
                                              pjmedia_aud_param *param) override;

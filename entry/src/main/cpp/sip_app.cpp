@@ -36,9 +36,13 @@ SipApp::SipApp(){
         config.uaConfig.maxCalls = 4;
         config.uaConfig.userAgent = "panyi_ua";
         
-        config.logConfig.level = 5;          // 日志等级，范围0-5
+        config.logConfig.level = 5;// 日志等级，范围0-5
         config.logConfig.consoleLevel = 4;   // 控制台打印等级
         config.logConfig.writer = new MyLogger(); // 自定义日志写入器
+        
+        //引入回音消除
+        config.medConfig.ecTailLen = 200;
+        config.medConfig.ecOptions = PJMEDIA_ECHO_SIMPLE;
         
         endpoint_->libInit(config);
         NLOGI("SipApp endpoint lib init");

@@ -42,9 +42,13 @@ typedef struct{
     OH_AudioCapturer* capture;
     
     uint frameSize;
+    
     bool isPlayThreadRegister = false;
     
     pj_thread_t *playThread;
+    
+    bool isCaptureThreadRegister = false;
+    pj_thread_t *captureThread;
 } ohaudio_stream;
 
 pj_status_t OhStreamGetParam(pjmedia_aud_stream *s,pjmedia_aud_param *param){
@@ -224,6 +228,7 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
     NLOGI("AudioBackend OHA OhaudioCreateStream start");
     ohaudio_factory *ohFactory = reinterpret_cast<ohaudio_factory *>(f);
     pj_pool_t *pool = pj_pool_create(ohFactory->pf, "oh_audio_stream", 1024, 1024, nullptr);
+    
     if(pool == nullptr){
         return PJ_EINVAL;
     }
@@ -236,12 +241,13 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
     pj_memcpy(&strm->param, param, sizeof(*param));
     
     strm->user_data = user_data;
+    strm->isCaptureThreadRegister = false;
+    strm->isPlayThreadRegister = false;
     strm->recCallback = rec_cb;
     strm->playCallback = play_cb;
+    strm->frameSize = (param->samples_per_frame * param->bits_per_sample) / 8;
     
     if (strm->dir & PJMEDIA_DIR_PLAYBACK){//播放
-        strm->renderer = ohFactory->renderer;
-        
         OH_AudioStreamBuilder* builder;
         OH_AudioStreamBuilder_Create(&builder, AUDIOSTREAM_TYPE_RENDERER);
         
@@ -256,17 +262,20 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
         OH_AudioStreamBuilder_SetEncodingType(builder, AUDIOSTREAM_ENCODING_TYPE_RAW);
         OH_AudioStreamBuilder_SetRendererInfo(builder, AUDIOSTREAM_USAGE_GAME);
         
-        strm->frameSize = (param->samples_per_frame * param->bits_per_sample) / 8;
         OH_AudioRenderer_Callbacks callbacks;
         callbacks.OH_AudioRenderer_OnWriteData = []
         (OH_AudioRenderer* renderer,void* userData,void* out_buffer,int32_t length){
             NLOGI("AudioRenderer callback : %{public}d", length);
             ohaudio_stream* stream = static_cast<ohaudio_stream *>(userData);
+            if(stream->isQuit){
+                return 0;
+            }
+            
             pj_thread_desc desc;
             if (!stream->isPlayThreadRegister && !pj_thread_is_registered()){
                 pj_thread_register("ohaudio_play_thread",desc,&stream->playThread);
                 stream->isPlayThreadRegister = true;
-                NLOGI("Player thread started");
+                NLOGI("AudioRenderer Player thread started");
             }
             
             char* out = static_cast<char*>(out_buffer);
@@ -280,7 +289,7 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
                 frame.timestamp.u64 = stream->play_timestamp.u64;
                 frame.bit_info = 0;
         
-                pj_status_t status = (*stream->playCallback)(stream->user_data, &frame);
+                pj_status_t status = stream->playCallback(stream->user_data, &frame);
                 if (status != PJ_SUCCESS || frame.type != PJMEDIA_FRAME_TYPE_AUDIO) {
                     pj_bzero(out + filled, stream->frameSize);  // 出错就补零
                 }
@@ -312,6 +321,56 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
     }
     
     if(strm->dir & PJMEDIA_DIR_CAPTURE){//采集
+        OH_AudioStreamBuilder* builder;
+        OH_AudioStreamBuilder_Create(&builder, AUDIOSTREAM_TYPE_CAPTURER);
+        
+        OH_AudioStreamBuilder_SetSamplingRate(builder, param->clock_rate);
+        OH_AudioStreamBuilder_SetChannelCount(builder, param->channel_count);
+        OH_AudioStreamBuilder_SetSampleFormat(builder, AUDIOSTREAM_SAMPLE_S16LE);
+        OH_AudioStreamBuilder_SetEncodingType(builder, AUDIOSTREAM_ENCODING_TYPE_RAW);
+        OH_AudioStreamBuilder_SetCapturerInfo(builder, AUDIOSTREAM_SOURCE_TYPE_MIC);
+        
+        OH_AudioCapturer_Callbacks captureCallbacks;
+        captureCallbacks.OH_AudioCapturer_OnError = nullptr;
+        captureCallbacks.OH_AudioCapturer_OnInterruptEvent = nullptr;
+        captureCallbacks.OH_AudioCapturer_OnStreamEvent = nullptr;
+        captureCallbacks.OH_AudioCapturer_OnReadData = []
+        (OH_AudioCapturer* capturer,void* userData,void* buffer,int32_t length){
+            ohaudio_stream* stream = static_cast<ohaudio_stream *>(userData);
+            
+            NLOGI("AudioCapture : %{public}d    frameSize = %{public}d", length,stream->frameSize);
+            if(stream->isQuit){
+                return 0;
+            }
+            
+            pj_thread_desc desc;
+            if (!stream->isCaptureThreadRegister && !pj_thread_is_registered()){
+                pj_thread_register("ohaudio_capture_thread",desc,&stream->captureThread);
+                stream->isCaptureThreadRegister = true;
+                NLOGI("AudioCapture capture thread started");
+            }
+            
+            pjmedia_frame frame;
+            frame.type = PJMEDIA_FRAME_TYPE_AUDIO;
+            frame.buf = buffer;
+            frame.size = length;
+            frame.timestamp.u64 = stream->rec_timestamp.u64;
+            frame.bit_info = 0;
+            
+            NLOGI("AudioCapture : start recCallback");
+            stream->recCallback(stream->user_data, &frame);
+            NLOGI("AudioCapture : start recCallback End %{public}d",stream->rec_timestamp.u64);
+            
+            stream->rec_timestamp.u64 += stream->param.samples_per_frame / stream->param.channel_count;
+            NLOGI("AudioCapture recCallback length : %{public}d   frameSize: %{public}d"
+                        ,length, frame.size);
+            return 0;
+        };
+        
+        OH_AudioStreamBuilder_SetCapturerCallback(builder, captureCallbacks, strm);
+        OH_AudioCapturer *cap;
+        OH_AudioStreamBuilder_GenerateCapturer(builder, &cap);
+        ohFactory->capture = cap;
         strm->capture = ohFactory->capture;
     }
     

@@ -8,6 +8,7 @@
 #include <ohaudio/native_audiocapturer.h>
 #include <ohaudio/native_audiorenderer.h>
 #include <ohaudio/native_audiostreambuilder.h>
+#include "pjsua2.hpp"
 
 typedef struct{
     pjmedia_aud_dev_factory  base;
@@ -33,9 +34,17 @@ typedef struct{
     bool isQuit;
     pjmedia_aud_rec_cb recCallback;
     pjmedia_aud_play_cb playCallback;
+    
+    pj_timestamp play_timestamp;
+    pj_timestamp rec_timestamp;
 
     OH_AudioRenderer* renderer;
     OH_AudioCapturer* capture;
+    
+    uint frameSize;
+    bool isPlayThreadRegister = false;
+    
+    pj_thread_t *playThread;
 } ohaudio_stream;
 
 pj_status_t OhStreamGetParam(pjmedia_aud_stream *s,pjmedia_aud_param *param){
@@ -167,6 +176,8 @@ pj_status_t OhaudioDevInfo(pjmedia_aud_dev_factory *f,unsigned index,pjmedia_aud
 
 pj_status_t OhaudioDefaultParam(pjmedia_aud_dev_factory *f,unsigned index,pjmedia_aud_param *param){
 //    ohaudio_factory *ohFactory = reinterpret_cast<ohaudio_factory *>(f);
+    NLOGI("OhaudioDefaultParam");
+    
     pjmedia_aud_dev_info adi;
     pj_status_t status;
     
@@ -201,6 +212,10 @@ pj_status_t OhaudioDefaultParam(pjmedia_aud_dev_factory *f,unsigned index,pjmedi
     return PJ_SUCCESS;
 }
 
+int min(int a, int b){
+    return a > b? b : a;
+}
+
 pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
                                 const pjmedia_aud_param *param,
                                 pjmedia_aud_rec_cb rec_cb,
@@ -227,11 +242,77 @@ pj_status_t OhaudioCreateStream(pjmedia_aud_dev_factory *f,
     if (strm->dir & PJMEDIA_DIR_PLAYBACK){//播放
         strm->renderer = ohFactory->renderer;
         
+        OH_AudioStreamBuilder* builder;
+        OH_AudioStreamBuilder_Create(&builder, AUDIOSTREAM_TYPE_RENDERER);
+        
+        NLOGI("AudioRenderer bits_per_sample :%{public}d Sample : %{public}d  channelCount: %{public}d", 
+              param->bits_per_sample,
+              param->clock_rate, 
+              param->channel_count);
+        
+        OH_AudioStreamBuilder_SetSamplingRate(builder, param->clock_rate);
+        OH_AudioStreamBuilder_SetChannelCount(builder, param->channel_count);
+        OH_AudioStreamBuilder_SetSampleFormat(builder, AUDIOSTREAM_SAMPLE_S16LE);
+        OH_AudioStreamBuilder_SetEncodingType(builder, AUDIOSTREAM_ENCODING_TYPE_RAW);
+        OH_AudioStreamBuilder_SetRendererInfo(builder, AUDIOSTREAM_USAGE_GAME);
+        
+        strm->frameSize = (param->samples_per_frame * param->bits_per_sample) / 8;
+        OH_AudioRenderer_Callbacks callbacks;
+        callbacks.OH_AudioRenderer_OnWriteData = []
+        (OH_AudioRenderer* renderer,void* userData,void* out_buffer,int32_t length){
+            NLOGI("AudioRenderer callback : %{public}d", length);
+            ohaudio_stream* stream = static_cast<ohaudio_stream *>(userData);
+            pj_thread_desc desc;
+            if (!stream->isPlayThreadRegister && !pj_thread_is_registered()){
+                pj_thread_register("ohaudio_play_thread",desc,&stream->playThread);
+                stream->isPlayThreadRegister = true;
+                NLOGI("Player thread started");
+            }
+            
+            char* out = static_cast<char*>(out_buffer);
+            int filled = 0;
+            
+            while (filled + stream->frameSize <= length) {
+                pjmedia_frame frame;
+                frame.type = PJMEDIA_FRAME_TYPE_AUDIO;
+                frame.buf = out + filled;
+                frame.size = stream->frameSize;   // 
+                frame.timestamp.u64 = stream->play_timestamp.u64;
+                frame.bit_info = 0;
+        
+                pj_status_t status = (*stream->playCallback)(stream->user_data, &frame);
+                if (status != PJ_SUCCESS || frame.type != PJMEDIA_FRAME_TYPE_AUDIO) {
+                    pj_bzero(out + filled, stream->frameSize);  // 出错就补零
+                }
+        
+                filled += stream->frameSize;
+                stream->play_timestamp.u64 += stream->param.samples_per_frame / stream->param.channel_count;
+            }//end while
+        
+            // 如果 length 不是 frameSize 的整数倍，剩余部分补零
+            if (filled < length) {
+                pj_bzero(out + filled, length - filled);
+            }
+            return 0;
+        };
+        callbacks.OH_AudioRenderer_OnStreamEvent = nullptr;
+        callbacks.OH_AudioRenderer_OnInterruptEvent = nullptr;
+        callbacks.OH_AudioRenderer_OnError = []
+        (OH_AudioRenderer* renderer,void* userData,OH_AudioStream_Result error){
+            NLOGE("AudioRenderer Error code : %{public}d", error);
+            return 0;
+        };
+        
+        OH_AudioStreamBuilder_SetRendererCallback(builder, callbacks, strm);
+        
+        OH_AudioRenderer* audioRenderer;
+        OH_AudioStreamBuilder_GenerateRenderer(builder, &audioRenderer);
+        ohFactory->renderer = audioRenderer;
+        strm->renderer = ohFactory->renderer;
     }
     
     if(strm->dir & PJMEDIA_DIR_CAPTURE){//采集
         strm->capture = ohFactory->capture;
-        
     }
     
     strm->base.op = &stream_operations;

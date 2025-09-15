@@ -24,5 +24,7 @@ export const SipCallAccept:(callId:string)=>void;
 
 export const SipCallHangup:(callId:string, isBusy:boolean)=>void;
 
+export const SipMakeCall:(call_number:string)=>string;
+
 
 

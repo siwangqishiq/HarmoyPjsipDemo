@@ -18,7 +18,7 @@
 #include <vector>
 
 const std::string SIP_PROTOCOL = "sip:";
-const std::string SIP_SERVER = "192.168.102.20:5060";
+const std::string SIP_SERVER = "192.168.102.103:5060";
 
 const std::string OBSERVER_METHOD_REGSTATE_CHANGE = "onRegStateChanged";
 const std::string OBSERVER_METHOD_INCOMING_CALL = "onIncomingCall";
@@ -71,6 +71,8 @@ public:
     
     void hangup(std::string &callId, bool isBusy);
     void accept(std::string &callId);
+    
+    std::string makeCall(std::string call_number);
     
     bool removeCall(std::string &callId);
 private:

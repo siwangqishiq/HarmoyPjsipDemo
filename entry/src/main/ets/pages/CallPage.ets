@@ -18,6 +18,8 @@ export struct CallPage {
 
   @State callConnected : boolean = false
 
+  @State isCaller : boolean = false
+
   observer:SipObserver = {
     onRegStateChanged: (code: number, msg?: string): void => {
       console.log("native_log CallPage onRegStateChanged code " + code +"  " + msg)
@@ -62,11 +64,13 @@ export struct CallPage {
                 NativeBridge.SipCallHangup(this.params?.callId,false);
               })
           }else{
-            Button("接通")
-              .margin({top:8})
-              .onClick((v)=>{
-                NativeBridge.SipCallAccept(this.params?.callId);
-              })
+            if(!this.isCaller){
+              Button("接通")
+                .margin({top:8})
+                .onClick((v)=>{
+                  NativeBridge.SipCallAccept(this.params?.callId);
+                })
+            }
 
             Button("挂断")
               .margin({top:8})
@@ -84,6 +88,7 @@ export struct CallPage {
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack
       this.params = context.pathInfo.param as CallPageParams
+      this.isCaller = this.params?.isCaller
     })
   }
 }

@@ -205,6 +205,27 @@ static napi_value NAPI_Global_SipCallHangup(napi_env env, napi_callback_info inf
     return nullptr;
 }
 
+static napi_value NAPI_Global_make_call(napi_env env, napi_callback_info info) {
+    napi_value ret = nullptr;
+
+    size_t argc = 1;
+    napi_value args[2] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+
+    char buf[1024];
+    size_t size = 0;
+    napi_get_value_string_utf8(env, args[0], buf, 1024, &size);
+    std::string call_number(buf,buf + size);
+    
+    if(sipApp != nullptr){
+        std::string call_id = sipApp->makeCall(call_number);
+        napi_create_string_utf8(env, call_id.c_str(), call_id.length(), &ret);
+        return ret;
+    }
+    
+    return ret;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
@@ -224,6 +245,7 @@ static napi_value Init(napi_env env, napi_value exports) {
          nullptr},
         {"SipCallAccept", nullptr, NAPI_Global_SipCallAccept, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SipCallHangup", nullptr, NAPI_Global_SipCallHangup, nullptr, nullptr, nullptr, napi_default, nullptr },
+        {"SipMakeCall", nullptr, NAPI_Global_make_call, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

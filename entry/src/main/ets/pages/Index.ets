@@ -18,6 +18,8 @@ struct Index {
   inputAccount:string = "105"
   inputPassword:string = "105"
 
+  input_make_call_number:string = ""
+
   observer:SipObserver = {
     onRegStateChanged: (code: number, msg?: string): void => {
       console.log("onRegStateChanged code " + code +"  " + msg)
@@ -107,6 +109,31 @@ struct Index {
             .margin({top:8})
             .onClick(()=>{
               NativeBridge.SipLogin(this.inputAccount, this.inputPassword)
+            })
+
+          TextInput({
+            placeholder:"拨打号码",
+            text:this.input_make_call_number
+          }).fontSize(20)
+            .margin({top:32})
+            .onChange((v)=>{
+              this.input_make_call_number = v
+            })
+
+          Button("拨打电话")
+            .margin({top:8})
+            .onClick(()=>{
+              const call_id = NativeBridge.SipMakeCall(this.input_make_call_number)
+
+              console.log("MakeCall callId " + call_id)
+              const params:CallPageParams = {
+                isCaller:true,
+                callId:call_id
+              }
+              this.pathStack?.pushPath({
+                name:"CallPage",
+                param:params
+              });
             })
 
           // Button("点击测试")

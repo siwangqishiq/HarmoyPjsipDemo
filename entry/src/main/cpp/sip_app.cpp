@@ -286,3 +286,14 @@ bool SipApp::removeCall(std::string &callId){
     return false;
 }
 
+std::string SipApp::makeCall(std::string call_number){
+    auto make_call = std::make_shared<MyCall>(this, *this->account_,PJSUA_INVALID_ID);
+    pj::CallOpParam param(true);
+    std::string dst_uri = "sip:"+call_number+"@"+SIP_SERVER+";transport=tcp";
+    NLOGI("dst_uri = %{public}s", dst_uri.c_str());
+    
+    make_call->makeCall(dst_uri, param);
+    callList.push_back(make_call);
+    return make_call->getCallId();
+}
+

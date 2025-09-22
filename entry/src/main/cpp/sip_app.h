@@ -18,7 +18,7 @@
 #include <vector>
 
 const std::string SIP_PROTOCOL = "sip:";
-const std::string SIP_SERVER = "192.168.102.103:5060";
+const std::string SIP_SERVER = "192.168.102.18:5060";
 
 const std::string OBSERVER_METHOD_REGSTATE_CHANGE = "onRegStateChanged";
 const std::string OBSERVER_METHOD_INCOMING_CALL = "onIncomingCall";

@@ -260,7 +260,7 @@ void SipApp::hangup(std::string &callId,bool isBusy){
     if(isBusy){
         param.statusCode = PJSIP_SC_BUSY_HERE;
     }else{
-        param.statusCode = PJSIP_SC_DECLINE;
+        param.statusCode = PJSIP_SC_REQUEST_TERMINATED;
     }
     call->hangup(param);
 }
